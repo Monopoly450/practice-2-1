@@ -1,7 +1,8 @@
 import './styles.css';
-import { Book } from './types';
-import { formatBook } from './tasks/task2-functions';
-import { applyFilters, filterByAuthor, filterByMinYear } from './tasks/task3-filters';
+import type { Book, BookFilter } from './task1-types';
+import { formatBook } from './task1-types';
+import { applyFilters, filterByAuthor, filterByMinYear } from './task3-filters';
+import { createBookFromForm } from './task4-integration';
 
 // Готовые данные для старта
 const initialBooks: Book[] = [
@@ -9,25 +10,53 @@ const initialBooks: Book[] = [
   { id: '2', title: 'JavaScript Basics', authors: ['Jane Smith'], year: 2022 },
 ];
 
-// TODO: Студенты пишут код ниже
-const bookList = document.getElementById('bookList')!;
+// Текущий список книг
+const books: Book[] = [...initialBooks];
 
-function renderBooks(books: Book[]) {
-  bookList.innerHTML = books.map(book => 
-    `<div class="book-card">${formatBook(book)}</div>`
-  ).join('');
+// DOM-элементы
+const bookList = document.getElementById('bookList');
+const bookForm = document.getElementById('bookForm') as HTMLFormElement | null;
+const applyFiltersBtn = document.getElementById('applyFilters') as HTMLButtonElement | null;
+
+function renderBooks(items: Book[]) {
+  if (!bookList) return;
+  bookList.innerHTML = items
+    .map(book => `<div class="book-card">${formatBook(book)}</div>`)
+    .join('');
 }
 
 // Отрисовать начальные книги
-renderBooks(initialBooks);
+renderBooks(books);
 
 // Обработчик формы
-document.getElementById('bookForm')?.addEventListener('submit', (e) => {
+bookForm?.addEventListener('submit', (e: SubmitEvent) => {
   e.preventDefault();
-  // TODO: Получить данные из формы, добавить книгу, перерисовать
+
+  const newBook = createBookFromForm(new FormData(bookForm));
+
+  books.push(newBook);
+  renderBooks(books);
+  bookForm.reset();
 });
 
 // Обработчик фильтров
-document.getElementById('applyFilters')?.addEventListener('click', () => {
-  // TODO: Применить фильтры, перерисовать
+applyFiltersBtn?.addEventListener('click', () => {
+  const authorFilterInput = document.getElementById('filterAuthor') as HTMLInputElement | null;
+  const minYearFilterInput = document.getElementById('filterYear') as HTMLInputElement | null;
+
+  const authorQuery = authorFilterInput?.value.trim() ?? '';
+  const minYearQuery = Number(minYearFilterInput?.value);
+
+  const filters: BookFilter[] = [];
+
+  if (authorQuery) {
+    filters.push(filterByAuthor(authorQuery));
+  }
+
+  if (!Number.isNaN(minYearQuery) && minYearQuery > 0) {
+    filters.push(filterByMinYear(minYearQuery));
+  }
+
+  const filteredBooks = applyFilters(books, filters);
+  renderBooks(filteredBooks);
 });
