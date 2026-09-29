@@ -12,7 +12,7 @@ describe("Task 3: Фильтрация", () => {
     { id: "1", title: "TS Guide", authors: ["John Doe", "Jane"], year: 2023, rating: 4.5 },
     { id: "2", title: "JS Basics", authors: ["Alice"], year: 2020, rating: 3.0 },
     { id: "3", title: "Advanced TS", authors: ["John Doe"], year: 2022, rating: 5.0 },
-    { id: "4", title: "Old Book", authors: ["Bob"], year: 2015 },
+    { id: "4", title: "Old Book", authors: ["Bob"] },
   ];
 
   describe("filterByAuthor", () => {
@@ -69,8 +69,7 @@ describe("Task 3: Фильтрация", () => {
     it("должен применять несколько фильтров одновременно", () => {
       const filters = [filterByAuthor("John Doe"), filterByMinYear(2022)];
       const result = applyFilters(books, filters);
-      expect(result.length).toBe(1);
-      expect(result[0].id).toBe("3");
+      expect(result.map((book) => book.id)).toEqual(["1", "3"]);
     });
 
     it("должен вернуть все книги если фильтров нет", () => {
